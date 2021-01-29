@@ -16,6 +16,12 @@ class MarkerFast:
     """
 
     def __init__(self, model_path="../model", device='cpu'):
+        """[初始化自动标记系统]
+
+        Args:
+            model_path (str, optional): [模型地址]. Defaults to "../model".
+            device (str, optional): [使用cpu黑色cuda]. Defaults to 'cpu'.
+        """
         self.model_path = model_path
         self.labels_file = os.path.join(model_path, "labels.txt")
         self.device = device
@@ -26,6 +32,8 @@ class MarkerFast:
         pass
 
     def release(self):
+        """[释放模型]
+        """
         # print("释放显存")
         self.model.cpu()
 
@@ -39,6 +47,11 @@ class MarkerFast:
     # @profile
 
     def load_model(self):
+        """[加载模型]
+
+        Returns:
+            [type]: [返回model, tokenizer]
+        """
         # tokenizer = AutoTokenizer.from_pretrained(self.model_path)
         self.model = AutoModelForTokenClassification.from_pretrained(
             self.model_path)
@@ -60,6 +73,14 @@ class MarkerFast:
     # @profile
 
     def filterPunctuation(self, x):
+        """[过滤中文标点]
+
+        Args:
+            x ([type]): [输入文本]
+
+        Returns:
+            [type]: [输出文本]
+        """
         x = regex.sub(r'[‘’]', "'", x)
         x = regex.sub(r'[“”]', '"', x)
         x = regex.sub(r'[…]', '...', x)
