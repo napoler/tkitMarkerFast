@@ -3,3 +3,4 @@ _draft/
 tkitMarkerFast/__pycache__/
 *.egg-info/
 dist/
+data/

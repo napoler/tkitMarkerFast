@@ -71,7 +71,23 @@ class MarkerFast:
         # self.model.eval()
         return self.model, self.tokenizer
     # @profile
+    def cut_sent(self,para):
+        """[中文分句函数]
 
+        Args:
+            para ([type]): [句子段落]
+
+        Returns:
+            [type]: [句子列表]
+        """
+        para = re.sub('([。！？\?])([^”’])', r"\1\n\2", para)  # 单字符断句符
+        para = re.sub('(\.{6})([^”’])', r"\1\n\2", para)  # 英文省略号
+        para = re.sub('(\…{2})([^”’])', r"\1\n\2", para)  # 中文省略号
+        para = re.sub('([。！？\?][”’])([^，。！？\?])', r'\1\n\2', para)
+        # 如果双引号前有终止符，那么双引号才是句子的终点，把分句符\n放到双引号后，注意前面的几句都小心保留了双引号
+        para = para.rstrip()  # 段尾如果有多余的\n就去掉它
+        # 很多规则中会考虑分号;，但是这里我把它忽略不计，破折号、英文双引号等同样忽略，需要的再做些简单调整即可。
+        return para.split("\n")
     def filterPunctuation(self, x):
         """[过滤中文标点]
 
@@ -120,8 +136,9 @@ class MarkerFast:
             words=self.tokenizer.tokenize(text)
             tmp_eval_loss, logits = outputs[:2]
             # print("words",words)
-
-            for i,(m,w) in enumerate( zip(torch.argmax(logits, axis=2).tolist()[0],words)):
+            # print(len(torch.argmax(logits, axis=2).tolist()[0][1:-1]))
+            # print(len(words))
+            for i,(m,w) in enumerate( zip(torch.argmax(logits, axis=2).tolist()[0][1:-1],words)):
                 # print(w)
                 if m >=len(self.lablels_dict):
                     mark_lable="X"
