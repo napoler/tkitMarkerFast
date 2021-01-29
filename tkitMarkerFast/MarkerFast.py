@@ -6,15 +6,12 @@ import os
 import re
 # import tkitFile
 import regex
-# from elasticsearch import Elasticsearch
-# from elasticsearch_dsl import Search
-# from elasticsearch_dsl import Q
-# from config import *
 from tqdm import tqdm
 import time
 
+import BMESBIO2Data
 
-class tkitMarkerFast:
+class MarkerFast:
     """[自动从ner标注结果中提取数据]
     """
 
@@ -70,30 +67,59 @@ class tkitMarkerFast:
         x = regex.sub(r"&nbsp", "", x)
         return x
 
-    def pre(self, word, text):
+    def pre(self, text):
+        """[自动预测文本的标记数据]
+        
 
+        Args:
+            text ([type]): [输入文本即可限制256]
+
+        Returns:
+            [标记后,words,mark,data]: [返回标记后数据和标记信息 tag格式数据]
+        """
+        data=[]
         model = self.model
         # text=word+" [SEP] "+text
         # lenth = 500-len(word)
-        all_ms = []
-        n = 0
-        h_i = 2+len(word)
+        # all_ms = []
+        # n = 0
+    
         with torch.no_grad():
-            # model = AutoModelForTokenClassification.from_pretrained(self.model_path)
-            # model.to(self.device)
             text = self.filterPunctuation(text)
 
             ids = self.tokenizer.encode_plus(
-                word, text_mini, max_length=256, add_special_tokens=True)
+                text, None, max_length=256, add_special_tokens=True,truncation=True)
             # print(ids)
             input_ids = torch.tensor(
                 ids['input_ids']).unsqueeze(0)  # Batch size 1
             labels = torch.tensor(
                 [1] * input_ids.size(1)).unsqueeze(0)  # Batch size 1
             outputs = model(input_ids, labels=labels)
-            # print("outputs",outputs)
+            # print("outputs",outputs) 
+            words=self.tokenizer.tokenize(text)
             tmp_eval_loss, logits = outputs[:2]
-            torch.argmax(logits, axis=2).tolist()[0]
+            # print("words",words)
+
+            for i,(m,w) in enumerate( zip(torch.argmax(logits, axis=2).tolist()[0],words)):
+                # print(w)
+                if m >=len(self.lablels_dict):
+                    mark_lable="X"
+                else:
+                    mark_lable=self.lablels_dict[m]
+                    # print(w,mark_lable)
+                # print(words[i],mark_lable)
+                    data.append(w+" "+mark_lable+"")
+            M2D=BMESBIO2Data.BMESBIO2Data()
+            # print(M2D.toData(data))
+            # (['【', '禁', '忌', '证', '】', '顽', '固', '、', '难', '治', '性', '高', '血', '压', '#', '禁', '忌', '症', '、', '严', '重', '的', '心', '血', '管', '疾', '病', '#', '禁', '忌', '症', '及', '甲', '亢', '#', '禁', '忌', '症', '患', '者', '。'], [{'type': '禁忌症', 'word': ['固', '、'], 'start': 6, 'end': 7}, {'type': '禁忌症', 'word': ['治', '性', '高', '血', '压', '#', '忌', '症', '、'], 'start': 9, 'end': 18}, {'type': '禁忌症', 'word': ['重', '的', '心', '血', '管', '疾', '病', '#'], 'start': 20, 'end': 27}, {'type': '禁忌症', 'word': ['亢', '#', '禁', '忌', '症', '患'], 'start': 33, 'end': 38}])
+            words,mark =M2D.toData(data)
+
+            # print("".join(M2D.data2BMES(words,mark)))
+        
+            #返回标记后数据集
+            return "".join(M2D.data2BMES(words,mark)),words,mark,data
+                
+            
 
             # for text_mini in self.cut_text(text, lenth):
             #     # text_mini=word+"[SEP]"+text_mini
