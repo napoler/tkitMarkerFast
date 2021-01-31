@@ -13,5 +13,8 @@ sh upload.sh
 ```
 
 文档查看
-https://github.com/napoler/tkitMarkerFast
 
+
+http://www.terrychan.org/tkitMarkerFast/
+
+https://github.com/napoler/tkitMarkerFast

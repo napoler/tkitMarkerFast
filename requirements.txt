@@ -1,5 +1,6 @@
-tqdm==4.56.0
 numpy==1.19.5
-torch==1.7.1
 regex==2020.11.13
 transformers==4.2.2
+tqdm==4.56.0
+torch==1.7.1
+tkitJson==0.0.0.3
