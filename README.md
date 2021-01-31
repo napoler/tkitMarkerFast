@@ -13,4 +13,5 @@ sh upload.sh
 ```
 
 文档查看
-https://www.terrychan.org/python_libs_demo/
+https://github.com/napoler/tkitMarkerFast
+

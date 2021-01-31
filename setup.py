@@ -33,7 +33,7 @@ setup(
     description='Terry toolkit tkitMarkerFast',
     author='Terry Chan',
     author_email='napoler2008@gmail.com',
-    url='http://www.terrychan.org/python_libs_demo/',
+    url='https://github.com/napoler/tkitMarkerFast',
     install_requires=read_requirements('requirements.txt'),  # 指定需要安装的依赖
     long_description=long_description,
     long_description_content_type="text/markdown",

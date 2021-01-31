@@ -8,7 +8,8 @@ import re
 import regex
 from tqdm import tqdm
 import time
-
+# from tkitJson import Config
+import tkitJson
 import BMESBIO2Data
 
 class MarkerFast:
@@ -56,16 +57,21 @@ class MarkerFast:
         self.model = AutoModelForTokenClassification.from_pretrained(
             self.model_path)
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_path)
+        
+        Config=tkitJson.Config(os.path.join(self.model_path,"config.json"))
+        self.config=Config.read()
+        # print(data.get("id2label"))
+        
         # model.to(self.device)
-        f2 = open(self.labels_file, 'r')
-        lablels_dict = {}
-        for i, line in enumerate(f2):
-            # l=line.split(" ")
-            l = line.replace("\n", '')
-            # print(l)
-            lablels_dict[i] = l
-        f2.close()
-        self.lablels_dict = lablels_dict
+        # f2 = open(self.labels_file, 'r')
+        # lablels_dict = {}
+        # for i, line in enumerate(f2):
+        #     # l=line.split(" ")
+        #     l = line.replace("\n", '')
+        #     # print(l)
+        #     lablels_dict[i] = l
+        # f2.close()
+        self.lablels_dict = self.config.get("id2label")
         # self.model=model
         # self.tokenizer=tokenizer
         # self.model.eval()
