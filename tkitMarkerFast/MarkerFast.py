@@ -145,11 +145,12 @@ class MarkerFast:
             # print(len(torch.argmax(logits, axis=2).tolist()[0][1:-1]))
             # print(len(words))
             for i,(m,w) in enumerate( zip(torch.argmax(logits, axis=2).tolist()[0][1:-1],words)):
-                # print(w)
+                # print(m)
+                # print(self.lablels_dict)
                 if m >=len(self.lablels_dict):
                     mark_lable="X"
                 else:
-                    mark_lable=self.lablels_dict[m]
+                    mark_lable=self.lablels_dict[str(m)]
                     # print(w,mark_lable)
                 # print(words[i],mark_lable)
                     data.append(w+" "+mark_lable+"")
