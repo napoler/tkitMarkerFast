@@ -17,7 +17,7 @@ class MarkerFast:
     """[自动从ner标注结果中提取数据]
     """
 
-    def __init__(self, model_path="../model", device='cpu'):
+    def __init__(self, model_path="../model", device='cpu',markType='BMES'):
         """[初始化自动标记系统]
 
         Args:
@@ -27,6 +27,7 @@ class MarkerFast:
         self.model_path = model_path
         self.labels_file = os.path.join(model_path, "labels.txt")
         self.device = device
+        self.markType=markType
         pass
 
     def __del__(self):
@@ -186,24 +187,27 @@ class MarkerFast:
                 [1] * input_ids.size(1)).unsqueeze(0)  # Batch size 1
             outputs = model(input_ids, labels=labels)
             # print("outputs",outputs) 
-            words=self.tokenizer.tokenize(text)
-            cases=[(text,tokenizer.tokenize(text))]
-            words=self.findDiff(cases)
+            
+            tokenWords=self.tokenizer.tokenize(text)
+            # cases=[(text,self.tokenizer.tokenize(text))]
+            # words=self.findDiff(cases)
+            
+            
             tmp_eval_loss, logits = outputs[:2]
             # print("words",words)
             # print(len(torch.argmax(logits, axis=2).tolist()[0][1:-1]))
             # print(len(words))
-            for i,(m,w) in enumerate( zip(torch.argmax(logits, axis=2).tolist()[0][1:-1],words)):
-                # print(m)
+            for i,(m,wd) in enumerate( zip(torch.argmax(logits, axis=2).tolist()[0][1:-1],tokenWords)):
+                # print(m,wd)
                 # print(self.lablels_dict)
                 if m >=len(self.lablels_dict):
                     mark_lable="X"
                 else:
                     mark_lable=self.lablels_dict[str(m)]
-                    # print(w,mark_lable)
+                    # print("w",wd,"m",mark_lable)
                 # print(words[i],mark_lable)
-                    data.append(w+" "+mark_lable+"")
-            M2D=BMESBIO2Data.BMESBIO2Data()
+                    data.append(wd+" "+mark_lable+"")
+            M2D=BMESBIO2Data.BMESBIO2Data(markType=self.markType)
             # print(M2D.toData(data))
             # (['【', '禁', '忌', '证', '】', '顽', '固', '、', '难', '治', '性', '高', '血', '压', '#', '禁', '忌', '症', '、', '严', '重', '的', '心', '血', '管', '疾', '病', '#', '禁', '忌', '症', '及', '甲', '亢', '#', '禁', '忌', '症', '患', '者', '。'], [{'type': '禁忌症', 'word': ['固', '、'], 'start': 6, 'end': 7}, {'type': '禁忌症', 'word': ['治', '性', '高', '血', '压', '#', '忌', '症', '、'], 'start': 9, 'end': 18}, {'type': '禁忌症', 'word': ['重', '的', '心', '血', '管', '疾', '病', '#'], 'start': 20, 'end': 27}, {'type': '禁忌症', 'word': ['亢', '#', '禁', '忌', '症', '患'], 'start': 33, 'end': 38}])
             words,mark =M2D.toData(data)
@@ -211,7 +215,7 @@ class MarkerFast:
             # print("".join(M2D.data2BMES(words,mark)))
         
             #返回标记后数据集
-            return "".join(M2D.data2BMES(words,mark)),words,mark,data
+            return "".join(M2D.data2BMES(words,mark)),tokenWords,mark,data
                 
             
 
