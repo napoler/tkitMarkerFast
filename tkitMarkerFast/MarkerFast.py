@@ -11,6 +11,7 @@ import time
 # from tkitJson import Config
 import tkitJson
 import BMESBIO2Data
+import difflib
 
 class MarkerFast:
     """[自动从ner标注结果中提取数据]
@@ -109,7 +110,53 @@ class MarkerFast:
         x = regex.sub(r'[—]', '-', x)
         x = regex.sub(r"&nbsp", "", x)
         return x
+    def findDiff(self,cases):
+        """[自动 获取文本改变部分的位置 https://www.kaggle.com/terrychanorg/unk-ok/]
 
+        Args:
+            cases ([list]): [cases=[('使用difflib库来比较两个字符串，并标记出不同的', ['使', '用', 'di', '##ff', '##li', '##b', '库', '来', '比', '较', '两', '个', '字', '符', '串', '，', '并', '标', '记', '出', '[UNK]', '同', '的', '地', '方'])]]
+        
+        """
+        data=[]
+        for a,b in cases:     
+            print('{} => {}'.format(a,b))
+            words=[]
+            word={"word":[],"start":None,"end":None,"new":{"word":[],"start":None,"end":None}}
+            line=list(difflib.ndiff(a, b))
+            for i,s in enumerate(line):
+    #             print(s)
+                if s[0]==' ': 
+                    if word['start']!=None:
+        #                 word['word']=line[word["start"]:word["end"]]
+                        word['word']="".join(word['word']).replace("##","").replace(" ","")
+                        word["new"]['word']="".join(word["new"]['word']).replace("##","").replace(" ","")
+                        words.append(word)
+                        word={"word":[],"start":None,"end":None,"new":{"word":[],"start":None,"end":None}}
+                    continue
+                elif s[0]=='-':
+                    # print(u'Delete "{}" from position {}'.format(s[-1],i))
+                    word["word"].append(s[1:])
+                    if word['start']==None:
+                        word['start']=i
+                        word["end"]=i
+                    else:
+                        word["end"]=i
+
+
+
+                elif s[0]=='+':
+    #                 print(u'Add "{}" to position {}'.format(s[-1],i)) 
+                    word["new"]["word"].append(s[1:])
+                    if word["new"]['start']==None:
+                        word["new"]['start']=i
+                        word["new"]["end"]=i
+                    else:
+                        word["new"]["end"]=i
+                    pass
+    #         print("修改内容",words)
+    #         print()
+            data.append(words)  
+        return data
     def pre(self, text):
         """[自动预测文本的标记数据]
         
@@ -140,6 +187,8 @@ class MarkerFast:
             outputs = model(input_ids, labels=labels)
             # print("outputs",outputs) 
             words=self.tokenizer.tokenize(text)
+            cases=[(text,tokenizer.tokenize(text))]
+            words=self.findDiff(cases)
             tmp_eval_loss, logits = outputs[:2]
             # print("words",words)
             # print(len(torch.argmax(logits, axis=2).tolist()[0][1:-1]))

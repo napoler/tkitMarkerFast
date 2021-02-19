@@ -1,6 +1,7 @@
-numpy==1.19.5
-regex==2020.11.13
 transformers==4.2.2
-tqdm==4.56.0
 torch==1.7.1
+tqdm==4.56.0
+regex==2020.11.13
+numpy==1.19.5
+BMESBIO2Data==0.0.0.3
 tkitJson==0.0.0.3
